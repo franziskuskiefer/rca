@@ -66,7 +66,7 @@ pub trait SymmetricCipherOps: Algorithm {
 }
 
 pub trait AsymmetricCipherOps: Algorithm {
-    fn new() -> Self;
+    fn new() -> Self where Self: Sized;
     fn encrypt(&self, key: &[u8], iv: &[u8], aad: &[u8], m: &[u8]) -> Ciphertext;
 }
 

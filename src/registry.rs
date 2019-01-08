@@ -9,8 +9,8 @@ use crate::cipher::*;
 
 pub trait Provider {
     fn supports(&self, algorithm: &'static str) -> bool;
-    fn get_algorithms(&self) -> Vec<Box<Algorithm>>;
-    fn get_algorithm(&self, algorithm: &'static str) -> Box<SymmetricCipherOps>;
+    fn get_sym_ciphers(&self) -> &Vec<Box<SymmetricCipherOps>>;
+    // fn get_sym_cipher(&mut self, algorithm: &'static str) -> Result<&Box<SymmetricCipherOps>, &'static str>;
 }
 
 pub trait Algorithm {
@@ -38,10 +38,13 @@ impl Registry {
         }
         return false;
     }
-    pub fn get_symmetric_cipher(&mut self, algorithm: &'static str) -> Result<Box<dyn SymmetricCipherOps + 'static>, &'static str> {
+    pub fn get_symmetric_cipher(&mut self, algorithm: &'static str) -> Result<&Box<dyn SymmetricCipherOps + 'static>, &'static str> {
         for provider in &mut self.providers {
-            if provider.supports(&algorithm) {
-                return Ok(provider.get_algorithm(algorithm));
+            let sym_ciphers = provider.get_sym_ciphers();
+            for cipher in sym_ciphers {
+                if cipher.get_name() == algorithm {
+                    return Ok(cipher);
+                }
             }
         }
         return Err("No provider attached that implements the cipher.");   
