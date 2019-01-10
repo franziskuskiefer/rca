@@ -7,8 +7,8 @@ use rand::Rng;
 mod dummy_provider;
 
 fn enc_dec_sym_test(cipher: &Box<SymmetricCipherOps>) {
-    let key = rand::thread_rng().gen::<[u8; 32]>();
-    let iv = rand::thread_rng().gen::<[u8; 32]>();
+    let key = cipher.gen_key();
+    let iv = cipher.gen_iv();
     let aad = rand::thread_rng().gen::<[u8; 32]>();
     let m = rand::thread_rng().gen::<[u8; 32]>();
 

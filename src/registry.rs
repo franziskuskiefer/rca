@@ -16,6 +16,7 @@ pub trait Algorithm {
     fn get_name(&self) -> String;
 }
 
+#[derive(Default)]
 pub struct Registry {
     providers: Vec<Box<Provider>>,
 }
@@ -35,7 +36,7 @@ impl Registry {
                 return true;
             }
         }
-        return false;
+        false
     }
     pub fn get_symmetric_cipher(
         &mut self,
@@ -49,7 +50,7 @@ impl Registry {
                 }
             }
         }
-        return Err("No provider attached that implements the cipher.");
+        Err("No provider attached that implements the cipher.")
     }
     pub fn get_asymmetric_cipher(
         &mut self,
@@ -63,6 +64,6 @@ impl Registry {
                 }
             }
         }
-        return Err("No provider attached that implements the cipher.");
+        Err("No provider attached that implements the cipher.")
     }
 }
