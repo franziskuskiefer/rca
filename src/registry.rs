@@ -8,8 +8,8 @@ use crate::cipher::*;
 
 pub trait Provider {
     fn supports(&self, algorithm: &'static str) -> bool;
-    fn get_sym_cipher(&self, algorithm: &'static str) -> Option<&Box<SymmetricCipherOps>>;
-    fn get_asym_cipher(&self, algorithm: &'static str) -> Option<&Box<AsymmetricCipherOps>>;
+    fn get_symmetric_cipher(&self, algorithm: &'static str) -> Option<&Box<SymmetricCipherOps>>;
+    fn get_asymmetric_cipher(&self, algorithm: &'static str) -> Option<&Box<AsymmetricCipherOps>>;
 }
 
 pub trait Algorithm {
@@ -19,6 +19,21 @@ pub trait Algorithm {
 #[derive(Default)]
 pub struct Registry {
     providers: Vec<Box<Provider>>,
+}
+
+macro_rules! get_algorithm {
+    ( $( $name:ident => $ty:ty ; )* ) => {
+        $(
+            pub fn $name(&mut self, algorithm: &'static str) -> Result<Box<$ty>, &'static str> {
+                for provider in &mut self.providers {
+                    if let Some(c) = provider.$name(algorithm) {
+                        return Ok(c.get_instance());
+                    }
+                }
+                Err("No provider attached that implements the cipher.")
+            }
+        )*
+    };
 }
 
 impl Registry {
@@ -38,26 +53,8 @@ impl Registry {
         }
         false
     }
-    pub fn get_symmetric_cipher(
-        &mut self,
-        algorithm: &'static str,
-    ) -> Result<Box<SymmetricCipherOps>, &'static str> {
-        for provider in &mut self.providers {
-            if let Some(c) = provider.get_sym_cipher(algorithm) {
-                return Ok(c.get_instance());
-            }
-        }
-        Err("No provider attached that implements the cipher.")
-    }
-    pub fn get_asymmetric_cipher(
-        &mut self,
-        algorithm: &'static str,
-    ) -> Result<Box<AsymmetricCipherOps>, &'static str> {
-        for provider in &mut self.providers {
-            if let Some(c) = provider.get_asym_cipher(algorithm) {
-                return Ok(c.get_instance());
-            }
-        }
-        Err("No provider attached that implements the cipher.")
+    get_algorithm! {
+        get_symmetric_cipher => SymmetricCipherOps;
+        get_asymmetric_cipher => AsymmetricCipherOps;
     }
 }

@@ -135,10 +135,10 @@ impl Provider for DummyProvider {
         }
         false
     }
-    fn get_sym_cipher(&self, algorithm: &'static str) -> Option<&Box<SymmetricCipherOps>> {
+    fn get_symmetric_cipher(&self, algorithm: &'static str) -> Option<&Box<SymmetricCipherOps>> {
         self.symmetric_ciphers.get(&algorithm.to_string())
     }
-    fn get_asym_cipher(&self, algorithm: &'static str) -> Option<&Box<AsymmetricCipherOps>> {
+    fn get_asymmetric_cipher(&self, algorithm: &'static str) -> Option<&Box<AsymmetricCipherOps>> {
         self.asymmetric_ciphers.get(&algorithm.to_string())
     }
 }
