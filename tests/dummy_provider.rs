@@ -1,16 +1,16 @@
 extern crate rust_crypto;
-// use rust_crypto::key::*;
 use rust_crypto::cipher::*;
 use rust_crypto::registry::*;
 
 // TODO: ok?
 use rand::Rng;
+use std::collections::HashMap;
 
-// Dummy implementation of RCA.
+// A dummy provider to show how to implement one and test RCA.
 
 // Symmetric cipher
 struct DummySymmetricCipher {
-    name: &'static str,
+    name: String,
     iv_len: usize,
     key_len: usize,
 }
@@ -22,12 +22,19 @@ impl Algorithm for DummySymmetricCipher {
 }
 
 impl SymmetricCipherOps for DummySymmetricCipher {
-    fn new() -> DummySymmetricCipher {
+    fn new() -> Self {
         DummySymmetricCipher {
-            name: "noop",
+            name: "noop".to_string(),
             iv_len: 12,
             key_len: 128,
         }
+    }
+    fn get_instance(&self) -> Box<SymmetricCipherOps> {
+        Box::new(Self {
+            name: self.name.clone(),
+            iv_len: self.iv_len,
+            key_len: self.key_len,
+        })
     }
     fn gen_key(&self) -> Vec<u8> {
         (0..self.key_len).map(|_| rand::random::<u8>()).collect()
@@ -45,7 +52,7 @@ impl SymmetricCipherOps for DummySymmetricCipher {
 
 // Asymmetric cipher
 struct DummyAsymmetricCipher {
-    name: &'static str,
+    name: String,
     nonce_len: usize,
 }
 
@@ -58,9 +65,15 @@ impl Algorithm for DummyAsymmetricCipher {
 impl AsymmetricCipherOps for DummyAsymmetricCipher {
     fn new() -> Self {
         DummyAsymmetricCipher {
-            name: "noop asym",
+            name: "noop asym".to_string(),
             nonce_len: 128,
         }
+    }
+    fn get_instance(&self) -> Box<AsymmetricCipherOps> {
+        Box::new(Self {
+            name: self.name.clone(),
+            nonce_len: self.nonce_len,
+        })
     }
     fn gen_keypair(&self) -> KeyPair {
         let secret = (0..256).map(|_| rand::random::<u8>()).collect();
@@ -83,32 +96,49 @@ impl AsymmetricCipherOps for DummyAsymmetricCipher {
 
 // The provider
 pub struct DummyProvider {
-    // TODO: remove?
-    algorithms: Vec<String>,
-    symmetric_ciphers: Vec<Box<SymmetricCipherOps>>,
-    asymmetric_ciphers: Vec<Box<AsymmetricCipherOps>>,
+    symmetric_ciphers: HashMap<String, Box<SymmetricCipherOps>>,
+    asymmetric_ciphers: HashMap<String, Box<AsymmetricCipherOps>>,
 }
 
 impl DummyProvider {
     pub fn new() -> DummyProvider {
-        let dummy_cipher = Box::new(DummySymmetricCipher::new());
-        let dummy_acipher = Box::new(DummyAsymmetricCipher::new());
+        let mut sym_cipher_map: HashMap<_, Box<SymmetricCipherOps>> = HashMap::new();
+        let dummy_sym_cipher_factory = DummySymmetricCipher::new();
+        sym_cipher_map.insert(
+            dummy_sym_cipher_factory.get_name(),
+            Box::new(dummy_sym_cipher_factory),
+        );
+
+        let mut asym_cipher_map: HashMap<_, Box<AsymmetricCipherOps>> = HashMap::new();
+        let asym_cipher_map_factory = DummyAsymmetricCipher::new();
+        asym_cipher_map.insert(
+            asym_cipher_map_factory.get_name(),
+            Box::new(asym_cipher_map_factory),
+        );
+
         DummyProvider {
-            algorithms: vec![dummy_cipher.get_name(), dummy_acipher.get_name()],
-            symmetric_ciphers: vec![dummy_cipher],
-            asymmetric_ciphers: vec![dummy_acipher],
+            symmetric_ciphers: sym_cipher_map,
+            asymmetric_ciphers: asym_cipher_map,
         }
     }
 }
 
+impl DummyProvider {}
+
 impl Provider for DummyProvider {
     fn supports(&self, algorithm: &'static str) -> bool {
-        self.algorithms.contains(&algorithm.to_string())
+        if let Some(_) = &self.symmetric_ciphers.get(&algorithm.to_string()) {
+            return true;
+        }
+        if let Some(_) = &self.asymmetric_ciphers.get(&algorithm.to_string()) {
+            return true;
+        }
+        false
     }
-    fn get_sym_ciphers(&self) -> &Vec<Box<SymmetricCipherOps>> {
-        &self.symmetric_ciphers
+    fn get_sym_cipher(&self, algorithm: &'static str) -> Option<&Box<SymmetricCipherOps>> {
+        self.symmetric_ciphers.get(&algorithm.to_string())
     }
-    fn get_asym_ciphers(&self) -> &Vec<Box<AsymmetricCipherOps>> {
-        &self.asymmetric_ciphers
+    fn get_asym_cipher(&self, algorithm: &'static str) -> Option<&Box<AsymmetricCipherOps>> {
+        self.asymmetric_ciphers.get(&algorithm.to_string())
     }
 }

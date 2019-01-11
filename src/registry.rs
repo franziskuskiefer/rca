@@ -8,8 +8,8 @@ use crate::cipher::*;
 
 pub trait Provider {
     fn supports(&self, algorithm: &'static str) -> bool;
-    fn get_sym_ciphers(&self) -> &Vec<Box<SymmetricCipherOps>>;
-    fn get_asym_ciphers(&self) -> &Vec<Box<AsymmetricCipherOps>>;
+    fn get_sym_cipher(&self, algorithm: &'static str) -> Option<&Box<SymmetricCipherOps>>;
+    fn get_asym_cipher(&self, algorithm: &'static str) -> Option<&Box<AsymmetricCipherOps>>;
 }
 
 pub trait Algorithm {
@@ -41,13 +41,10 @@ impl Registry {
     pub fn get_symmetric_cipher(
         &mut self,
         algorithm: &'static str,
-    ) -> Result<&Box<dyn SymmetricCipherOps + 'static>, &'static str> {
+    ) -> Result<Box<SymmetricCipherOps>, &'static str> {
         for provider in &mut self.providers {
-            let sym_ciphers = provider.get_sym_ciphers();
-            for cipher in sym_ciphers {
-                if cipher.get_name() == algorithm {
-                    return Ok(cipher);
-                }
+            if let Some(c) = provider.get_sym_cipher(algorithm) {
+                return Ok(c.get_instance());
             }
         }
         Err("No provider attached that implements the cipher.")
@@ -55,13 +52,10 @@ impl Registry {
     pub fn get_asymmetric_cipher(
         &mut self,
         algorithm: &'static str,
-    ) -> Result<&Box<dyn AsymmetricCipherOps + 'static>, &'static str> {
+    ) -> Result<Box<AsymmetricCipherOps>, &'static str> {
         for provider in &mut self.providers {
-            let sym_ciphers = provider.get_asym_ciphers();
-            for cipher in sym_ciphers {
-                if cipher.get_name() == algorithm {
-                    return Ok(cipher);
-                }
+            if let Some(c) = provider.get_asym_cipher(algorithm) {
+                return Ok(c.get_instance());
             }
         }
         Err("No provider attached that implements the cipher.")

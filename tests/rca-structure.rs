@@ -64,7 +64,7 @@ fn test_sym_cipher() {
         Some(v) => v,
         None => return,
     };
-    enc_dec_sym_test(cipher);
+    enc_dec_sym_test(&cipher);
 }
 
 #[test]
@@ -81,5 +81,5 @@ fn test_asym_cipher() {
         Some(v) => v,
         None => return,
     };
-    enc_dec_asym_test(cipher);
+    enc_dec_asym_test(&cipher);
 }

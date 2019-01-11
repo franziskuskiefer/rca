@@ -13,6 +13,7 @@ pub trait SymmetricCipherOps: Algorithm {
     fn new() -> Self
     where
         Self: Sized;
+    fn get_instance(&self) -> Box<SymmetricCipherOps>;
     fn gen_key(&self) -> Vec<u8>;
     fn gen_iv(&self) -> Vec<u8>;
     fn encrypt(&self, key: &[u8], iv: &[u8], aad: &[u8], m: &[u8]) -> Vec<u8>;
@@ -29,6 +30,7 @@ pub trait AsymmetricCipherOps: Algorithm {
     fn new() -> Self
     where
         Self: Sized;
+    fn get_instance(&self) -> Box<AsymmetricCipherOps>;
     fn gen_keypair(&self) -> KeyPair;
     fn gen_nonce(&self) -> Vec<u8>;
     fn encrypt(&self, key: &[u8], nonce: &[u8], m: &[u8]) -> Vec<u8>;
