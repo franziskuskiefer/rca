@@ -5,11 +5,63 @@
 //! # TODO: Example
 
 use crate::cipher::*;
+use crate::digest::*;
+
+use std::collections::HashMap;
 
 pub trait Provider {
     fn supports(&self, algorithm: &'static str) -> bool;
     fn get_symmetric_cipher(&self, algorithm: &'static str) -> Option<&Box<SymmetricCipherOps>>;
     fn get_asymmetric_cipher(&self, algorithm: &'static str) -> Option<&Box<AsymmetricCipherOps>>;
+    fn get_messagedigest(&self, algorithm: &'static str) -> Option<&Box<MessageDigest>>;
+}
+
+pub struct BaseProvider {
+    symmetric_ciphers: HashMap<String, Box<SymmetricCipherOps>>,
+    asymmetric_ciphers: HashMap<String, Box<AsymmetricCipherOps>>,
+    message_digests: HashMap<String, Box<MessageDigest>>,
+}
+
+impl BaseProvider {
+    pub fn new(
+        sym_cipher_map: HashMap<String, Box<SymmetricCipherOps>>,
+        asym_cipher_map: HashMap<String, Box<AsymmetricCipherOps>>,
+        md_map: HashMap<String, Box<MessageDigest>>,
+    ) -> BaseProvider {
+        BaseProvider {
+            symmetric_ciphers: sym_cipher_map,
+            asymmetric_ciphers: asym_cipher_map,
+            message_digests: md_map,
+        }
+    }
+}
+
+impl Provider for BaseProvider {
+    fn supports(&self, algorithm: &'static str) -> bool {
+        if self.symmetric_ciphers.get(&algorithm.to_string()).is_some() {
+            return true;
+        }
+        if self
+            .asymmetric_ciphers
+            .get(&algorithm.to_string())
+            .is_some()
+        {
+            return true;
+        }
+        if self.message_digests.get(&algorithm.to_string()).is_some() {
+            return true;
+        }
+        false
+    }
+    fn get_symmetric_cipher(&self, algorithm: &'static str) -> Option<&Box<SymmetricCipherOps>> {
+        self.symmetric_ciphers.get(&algorithm.to_string())
+    }
+    fn get_asymmetric_cipher(&self, algorithm: &'static str) -> Option<&Box<AsymmetricCipherOps>> {
+        self.asymmetric_ciphers.get(&algorithm.to_string())
+    }
+    fn get_messagedigest(&self, algorithm: &'static str) -> Option<&Box<MessageDigest>> {
+        self.message_digests.get(&algorithm.to_string())
+    }
 }
 
 pub trait Algorithm {
@@ -56,5 +108,6 @@ impl Registry {
     get_algorithm! {
         get_symmetric_cipher => SymmetricCipherOps;
         get_asymmetric_cipher => AsymmetricCipherOps;
+        get_messagedigest => MessageDigest;
     }
 }

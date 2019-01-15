@@ -1,5 +1,6 @@
 extern crate rust_crypto;
 use rust_crypto::cipher::*;
+use rust_crypto::digest::*;
 use rust_crypto::registry::*;
 
 // TODO: ok?
@@ -94,10 +95,58 @@ impl AsymmetricCipherOps for DummyAsymmetricCipher {
     }
 }
 
+// Message digest
+struct DummyMessageDigest {
+    name: String,
+    out_len: usize,
+    state: [u8; 32],
+}
+
+impl Algorithm for DummyMessageDigest {
+    fn get_name(&self) -> String {
+        self.name.to_string()
+    }
+}
+
+impl MessageDigest for DummyMessageDigest {
+    fn new() -> Self {
+        Self {
+            name: "stupid digest".to_string(),
+            out_len: 32,
+            state: [0; 32],
+        }
+    }
+    fn get_instance(&self) -> Box<MessageDigest> {
+        Box::new(Self {
+            name: self.name.clone(),
+            out_len: self.out_len,
+            state: self.state,
+        })
+    }
+    fn hash(&self, message: &[u8]) -> Vec<u8> {
+        message.iter().map(|x| !x).collect()
+    }
+    fn update(&mut self, message: &[u8]) {
+        for (i, b) in message.iter().enumerate() {
+            if i >= self.state.len() {
+                break;
+            }
+            self.state[i] ^= b;
+        }
+    }
+    fn finish(&mut self, message: Option<&[u8]>) -> Vec<u8> {
+        if message.is_some() {
+            self.update(message.unwrap());
+        }
+        self.state.to_vec()
+    }
+}
+
 // The provider
 pub struct DummyProvider {
     symmetric_ciphers: HashMap<String, Box<SymmetricCipherOps>>,
     asymmetric_ciphers: HashMap<String, Box<AsymmetricCipherOps>>,
+    message_digests: HashMap<String, Box<MessageDigest>>,
 }
 
 impl DummyProvider {
@@ -116,21 +165,31 @@ impl DummyProvider {
             Box::new(asym_cipher_map_factory),
         );
 
+        let mut md_map: HashMap<_, Box<MessageDigest>> = HashMap::new();
+        let md_map_factory = DummyMessageDigest::new();
+        md_map.insert(md_map_factory.get_name(), Box::new(md_map_factory));
+
         DummyProvider {
             symmetric_ciphers: sym_cipher_map,
             asymmetric_ciphers: asym_cipher_map,
+            message_digests: md_map,
         }
     }
 }
 
-impl DummyProvider {}
-
 impl Provider for DummyProvider {
     fn supports(&self, algorithm: &'static str) -> bool {
-        if let Some(_) = &self.symmetric_ciphers.get(&algorithm.to_string()) {
+        if self.symmetric_ciphers.get(&algorithm.to_string()).is_some() {
             return true;
         }
-        if let Some(_) = &self.asymmetric_ciphers.get(&algorithm.to_string()) {
+        if self
+            .asymmetric_ciphers
+            .get(&algorithm.to_string())
+            .is_some()
+        {
+            return true;
+        }
+        if self.message_digests.get(&algorithm.to_string()).is_some() {
             return true;
         }
         false
@@ -140,5 +199,36 @@ impl Provider for DummyProvider {
     }
     fn get_asymmetric_cipher(&self, algorithm: &'static str) -> Option<&Box<AsymmetricCipherOps>> {
         self.asymmetric_ciphers.get(&algorithm.to_string())
+    }
+    fn get_messagedigest(&self, algorithm: &'static str) -> Option<&Box<MessageDigest>> {
+        self.message_digests.get(&algorithm.to_string())
+    }
+}
+
+// Second dummy provider using the BaseProvider.
+// Using the same dummy algorithm implementations.
+pub struct TestBaseProvider {}
+
+impl TestBaseProvider {
+    pub fn new() -> BaseProvider {
+        let mut sym_cipher_map: HashMap<_, Box<SymmetricCipherOps>> = HashMap::new();
+        let dummy_sym_cipher_factory = DummySymmetricCipher::new();
+        sym_cipher_map.insert(
+            dummy_sym_cipher_factory.get_name(),
+            Box::new(dummy_sym_cipher_factory),
+        );
+
+        let mut asym_cipher_map: HashMap<_, Box<AsymmetricCipherOps>> = HashMap::new();
+        let asym_cipher_map_factory = DummyAsymmetricCipher::new();
+        asym_cipher_map.insert(
+            asym_cipher_map_factory.get_name(),
+            Box::new(asym_cipher_map_factory),
+        );
+
+        let mut md_map: HashMap<_, Box<MessageDigest>> = HashMap::new();
+        let md_map_factory = DummyMessageDigest::new();
+        md_map.insert(md_map_factory.get_name(), Box::new(md_map_factory));
+
+        BaseProvider::new(sym_cipher_map, asym_cipher_map, md_map)
     }
 }

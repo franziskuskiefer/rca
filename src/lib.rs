@@ -5,5 +5,6 @@
 //! # TODO: Example
 
 pub mod cipher;
+pub mod digest;
 
 pub mod registry;
