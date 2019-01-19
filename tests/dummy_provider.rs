@@ -43,10 +43,27 @@ impl SymmetricCipher for DummySymmetricCipher {
     fn gen_iv(&self) -> Vec<u8> {
         (0..self.iv_len).map(|_| rand::random::<u8>()).collect()
     }
-    fn encrypt(&self, key: &[u8], iv: &[u8], aad: &[u8], m: &[u8]) -> Vec<u8> {
-        m.to_vec()
+    fn encrypt(
+        &self,
+        key: &[u8],
+        iv: Option<&[u8]>,
+        aad: Option<&[u8]>,
+        m: &[u8],
+    ) -> (Vec<u8>, Vec<u8>) {
+        let iv_out = if iv.is_some() {
+            iv.unwrap().to_vec()
+        } else {
+            (0..self.iv_len).map(|_| rand::random::<u8>()).collect()
+        };
+        (m.to_vec(), iv_out)
     }
-    fn decrypt(&self, key: &[u8], iv: &[u8], aad: &[u8], c: &[u8]) -> Result<Vec<u8>, String> {
+    fn decrypt(
+        &self,
+        key: &[u8],
+        iv: &[u8],
+        aad: Option<&[u8]>,
+        c: &[u8],
+    ) -> Result<Vec<u8>, String> {
         Ok(c.to_vec())
     }
 }

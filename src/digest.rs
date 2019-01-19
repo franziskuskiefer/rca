@@ -14,7 +14,11 @@ pub trait MessageDigest: Algorithm {
     where
         Self: Sized;
     fn get_instance(&self) -> Box<MessageDigest>;
+
+    // One-shot hash function.
     fn hash(&self, message: &[u8]) -> Vec<u8>;
+
+    // Streaming interface.
     fn update(&mut self, message: &[u8]);
     fn finish(&mut self, message: Option<&[u8]>) -> Vec<u8>;
 }

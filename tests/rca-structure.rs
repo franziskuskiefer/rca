@@ -12,11 +12,12 @@ mod dummy_provider;
 fn enc_dec_sym_test(cipher: &Box<SymmetricCipher>) {
     let key = cipher.gen_key();
     let iv = cipher.gen_iv();
-    let aad = rand::thread_rng().gen::<[u8; 32]>();
+    let aad = rand::thread_rng().gen::<[u8; 10]>();
     let m = rand::thread_rng().gen::<[u8; 32]>();
 
-    let c = cipher.encrypt(&key, &iv, &aad, &m);
-    let m_dec = match cipher.decrypt(&key, &iv, &aad, &c) {
+    let (c, iv2) = cipher.encrypt(&key, Some(&iv), Some(&aad), &m);
+    assert_eq!(iv[..], iv2[..]);
+    let m_dec = match cipher.decrypt(&key, &iv, Some(&aad), &c) {
         Err(e) => {
             println!("Error decrypting {:?}", e);
             vec![]
