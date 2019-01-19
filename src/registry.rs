@@ -11,21 +11,21 @@ use std::collections::HashMap;
 
 pub trait Provider {
     fn supports(&self, algorithm: &'static str) -> bool;
-    fn get_symmetric_cipher(&self, algorithm: &'static str) -> Option<&Box<SymmetricCipherOps>>;
-    fn get_asymmetric_cipher(&self, algorithm: &'static str) -> Option<&Box<AsymmetricCipherOps>>;
+    fn get_symmetric_cipher(&self, algorithm: &'static str) -> Option<&Box<SymmetricCipher>>;
+    fn get_asymmetric_cipher(&self, algorithm: &'static str) -> Option<&Box<AsymmetricCipher>>;
     fn get_messagedigest(&self, algorithm: &'static str) -> Option<&Box<MessageDigest>>;
 }
 
 pub struct BaseProvider {
-    symmetric_ciphers: HashMap<String, Box<SymmetricCipherOps>>,
-    asymmetric_ciphers: HashMap<String, Box<AsymmetricCipherOps>>,
+    symmetric_ciphers: HashMap<String, Box<SymmetricCipher>>,
+    asymmetric_ciphers: HashMap<String, Box<AsymmetricCipher>>,
     message_digests: HashMap<String, Box<MessageDigest>>,
 }
 
 impl BaseProvider {
     pub fn new(
-        sym_cipher_map: HashMap<String, Box<SymmetricCipherOps>>,
-        asym_cipher_map: HashMap<String, Box<AsymmetricCipherOps>>,
+        sym_cipher_map: HashMap<String, Box<SymmetricCipher>>,
+        asym_cipher_map: HashMap<String, Box<AsymmetricCipher>>,
         md_map: HashMap<String, Box<MessageDigest>>,
     ) -> BaseProvider {
         BaseProvider {
@@ -53,10 +53,10 @@ impl Provider for BaseProvider {
         }
         false
     }
-    fn get_symmetric_cipher(&self, algorithm: &'static str) -> Option<&Box<SymmetricCipherOps>> {
+    fn get_symmetric_cipher(&self, algorithm: &'static str) -> Option<&Box<SymmetricCipher>> {
         self.symmetric_ciphers.get(&algorithm.to_string())
     }
-    fn get_asymmetric_cipher(&self, algorithm: &'static str) -> Option<&Box<AsymmetricCipherOps>> {
+    fn get_asymmetric_cipher(&self, algorithm: &'static str) -> Option<&Box<AsymmetricCipher>> {
         self.asymmetric_ciphers.get(&algorithm.to_string())
     }
     fn get_messagedigest(&self, algorithm: &'static str) -> Option<&Box<MessageDigest>> {
@@ -106,8 +106,8 @@ impl Registry {
         false
     }
     get_algorithm! {
-        get_symmetric_cipher => SymmetricCipherOps;
-        get_asymmetric_cipher => AsymmetricCipherOps;
+        get_symmetric_cipher => SymmetricCipher;
+        get_asymmetric_cipher => AsymmetricCipher;
         get_messagedigest => MessageDigest;
     }
 }

@@ -22,7 +22,7 @@ impl Algorithm for DummySymmetricCipher {
     }
 }
 
-impl SymmetricCipherOps for DummySymmetricCipher {
+impl SymmetricCipher for DummySymmetricCipher {
     fn new() -> Self {
         DummySymmetricCipher {
             name: "noop".to_string(),
@@ -30,7 +30,7 @@ impl SymmetricCipherOps for DummySymmetricCipher {
             key_len: 128,
         }
     }
-    fn get_instance(&self) -> Box<SymmetricCipherOps> {
+    fn get_instance(&self) -> Box<SymmetricCipher> {
         Box::new(Self {
             name: self.name.clone(),
             iv_len: self.iv_len,
@@ -63,14 +63,14 @@ impl Algorithm for DummyAsymmetricCipher {
     }
 }
 
-impl AsymmetricCipherOps for DummyAsymmetricCipher {
+impl AsymmetricCipher for DummyAsymmetricCipher {
     fn new() -> Self {
         DummyAsymmetricCipher {
             name: "noop asym".to_string(),
             nonce_len: 128,
         }
     }
-    fn get_instance(&self) -> Box<AsymmetricCipherOps> {
+    fn get_instance(&self) -> Box<AsymmetricCipher> {
         Box::new(Self {
             name: self.name.clone(),
             nonce_len: self.nonce_len,
@@ -144,21 +144,21 @@ impl MessageDigest for DummyMessageDigest {
 
 // The provider
 pub struct DummyProvider {
-    symmetric_ciphers: HashMap<String, Box<SymmetricCipherOps>>,
-    asymmetric_ciphers: HashMap<String, Box<AsymmetricCipherOps>>,
+    symmetric_ciphers: HashMap<String, Box<SymmetricCipher>>,
+    asymmetric_ciphers: HashMap<String, Box<AsymmetricCipher>>,
     message_digests: HashMap<String, Box<MessageDigest>>,
 }
 
 impl DummyProvider {
     pub fn new() -> DummyProvider {
-        let mut sym_cipher_map: HashMap<_, Box<SymmetricCipherOps>> = HashMap::new();
+        let mut sym_cipher_map: HashMap<_, Box<SymmetricCipher>> = HashMap::new();
         let dummy_sym_cipher_factory = DummySymmetricCipher::new();
         sym_cipher_map.insert(
             dummy_sym_cipher_factory.get_name(),
             Box::new(dummy_sym_cipher_factory),
         );
 
-        let mut asym_cipher_map: HashMap<_, Box<AsymmetricCipherOps>> = HashMap::new();
+        let mut asym_cipher_map: HashMap<_, Box<AsymmetricCipher>> = HashMap::new();
         let asym_cipher_map_factory = DummyAsymmetricCipher::new();
         asym_cipher_map.insert(
             asym_cipher_map_factory.get_name(),
@@ -194,10 +194,10 @@ impl Provider for DummyProvider {
         }
         false
     }
-    fn get_symmetric_cipher(&self, algorithm: &'static str) -> Option<&Box<SymmetricCipherOps>> {
+    fn get_symmetric_cipher(&self, algorithm: &'static str) -> Option<&Box<SymmetricCipher>> {
         self.symmetric_ciphers.get(&algorithm.to_string())
     }
-    fn get_asymmetric_cipher(&self, algorithm: &'static str) -> Option<&Box<AsymmetricCipherOps>> {
+    fn get_asymmetric_cipher(&self, algorithm: &'static str) -> Option<&Box<AsymmetricCipher>> {
         self.asymmetric_ciphers.get(&algorithm.to_string())
     }
     fn get_messagedigest(&self, algorithm: &'static str) -> Option<&Box<MessageDigest>> {
@@ -211,14 +211,14 @@ pub struct TestBaseProvider {}
 
 impl TestBaseProvider {
     pub fn new() -> BaseProvider {
-        let mut sym_cipher_map: HashMap<_, Box<SymmetricCipherOps>> = HashMap::new();
+        let mut sym_cipher_map: HashMap<_, Box<SymmetricCipher>> = HashMap::new();
         let dummy_sym_cipher_factory = DummySymmetricCipher::new();
         sym_cipher_map.insert(
             dummy_sym_cipher_factory.get_name(),
             Box::new(dummy_sym_cipher_factory),
         );
 
-        let mut asym_cipher_map: HashMap<_, Box<AsymmetricCipherOps>> = HashMap::new();
+        let mut asym_cipher_map: HashMap<_, Box<AsymmetricCipher>> = HashMap::new();
         let asym_cipher_map_factory = DummyAsymmetricCipher::new();
         asym_cipher_map.insert(
             asym_cipher_map_factory.get_name(),

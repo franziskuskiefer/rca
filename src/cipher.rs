@@ -9,11 +9,11 @@
 
 use crate::registry::Algorithm;
 
-pub trait SymmetricCipherOps: Algorithm {
+pub trait SymmetricCipher: Algorithm {
     fn new() -> Self
     where
         Self: Sized;
-    fn get_instance(&self) -> Box<SymmetricCipherOps>;
+    fn get_instance(&self) -> Box<SymmetricCipher>;
     fn gen_key(&self) -> Vec<u8>;
     fn gen_iv(&self) -> Vec<u8>;
     fn encrypt(&self, key: &[u8], iv: &[u8], aad: &[u8], m: &[u8]) -> Vec<u8>;
@@ -26,11 +26,11 @@ pub struct KeyPair {
     pub secret_bytes: Vec<u8>,
 }
 
-pub trait AsymmetricCipherOps: Algorithm {
+pub trait AsymmetricCipher: Algorithm {
     fn new() -> Self
     where
         Self: Sized;
-    fn get_instance(&self) -> Box<AsymmetricCipherOps>;
+    fn get_instance(&self) -> Box<AsymmetricCipher>;
     fn gen_keypair(&self) -> KeyPair;
     fn gen_nonce(&self) -> Vec<u8>;
     fn encrypt(&self, key: &[u8], nonce: &[u8], m: &[u8]) -> Vec<u8>;

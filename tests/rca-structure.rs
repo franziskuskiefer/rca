@@ -9,7 +9,7 @@ use rand::Rng;
 
 mod dummy_provider;
 
-fn enc_dec_sym_test(cipher: &Box<SymmetricCipherOps>) {
+fn enc_dec_sym_test(cipher: &Box<SymmetricCipher>) {
     let key = cipher.gen_key();
     let iv = cipher.gen_iv();
     let aad = rand::thread_rng().gen::<[u8; 32]>();
@@ -26,7 +26,7 @@ fn enc_dec_sym_test(cipher: &Box<SymmetricCipherOps>) {
     assert_eq!(m[..], m_dec[..]);
 }
 
-fn enc_dec_asym_test(cipher: &Box<AsymmetricCipherOps>) {
+fn enc_dec_asym_test(cipher: &Box<AsymmetricCipher>) {
     let key_pair = cipher.gen_keypair();
     let nonce = cipher.gen_nonce();
     let m = rand::thread_rng().gen::<[u8; 32]>();
