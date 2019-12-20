@@ -1,9 +1,9 @@
 #![allow(unused)]
 
-extern crate rust_crypto;
-use rust_crypto::cipher::*;
-use rust_crypto::digest::*;
-use rust_crypto::registry::*;
+extern crate rca;
+use rca::cipher::*;
+use rca::digest::*;
+use rca::registry::*;
 
 use rand::Rng;
 
