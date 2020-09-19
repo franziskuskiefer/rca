@@ -5,3 +5,4 @@
 //! 
 
 pub mod evercrypt_provider;
+pub mod hacspec_provider;

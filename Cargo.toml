@@ -6,6 +6,10 @@ edition = "2018"
 
 [dependencies]
 evercrypt = { git = "https://github.com/franziskuskiefer/evercrypt-rust.git", branch="master" }
+hacspec-chacha20poly1305 = { git = "https://github.com/hacspec/hacspec.git", branch="fstar-compiler" }
+hacspec-chacha20 = { git = "https://github.com/hacspec/hacspec.git", branch="fstar-compiler" }
+hacspec-poly1305 = { git = "https://github.com/hacspec/hacspec.git", branch="fstar-compiler" }
+hacspec-lib = { git = "https://github.com/hacspec/hacspec.git", branch="fstar-compiler" }
 
 [dev-dependencies]
 rand = "0.7"
