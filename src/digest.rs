@@ -1,24 +1,18 @@
-//! A cipher.
-//! A cipher can either be a symmetric or an asymmetric cipher.
-//!
-//! # Symmtric cipher
-//!
-//! # Asymmtric cipher
-//!
-//! # TODO: Example
+//! Message Digest
+//! 
 
 use crate::registry::Algorithm;
 
-pub trait MessageDigest: Algorithm {
+pub trait Digest: Algorithm {
     fn new() -> Self
     where
         Self: Sized;
-    fn get_instance(&self) -> Box<MessageDigest>;
+    fn get_instance(&self) -> Box<dyn Digest>;
 
-    // One-shot hash function.
+    // Single-shot hash function.
     fn hash(&self, message: &[u8]) -> Vec<u8>;
 
     // Streaming interface.
     fn update(&mut self, message: &[u8]);
-    fn finish(&mut self, message: Option<&[u8]>) -> Vec<u8>;
+    fn finish(&mut self, message: &[u8]) -> Vec<u8>;
 }
