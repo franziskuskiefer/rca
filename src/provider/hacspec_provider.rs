@@ -5,6 +5,8 @@ use hacspec_poly1305::Tag as HacspecTag;
 
 use std::collections::HashMap;
 
+use evercrypt::prelude::*;
+
 use crate::aead::{Aad, Aead as RcaAead, Ciphertext, Error, Key, Nonce, Tag};
 use crate::digest::Digest as RcaDigest;
 use crate::registry::*;
@@ -33,13 +35,13 @@ impl RcaAead for Chacha20Poly1305Provider {
 
     // Nonce and key generation helper.
     fn key_gen(&self) -> Vec<u8> {
-        unimplemented!()
+        get_random_vec(32)
     }
     fn get_key_len(&self) -> usize {
         32
     }
     fn nonce_gen(&self) -> Vec<u8> {
-        unimplemented!()
+        get_random_vec(12)
     }
     fn get_nonce_len(&self) -> usize {
         12
@@ -59,7 +61,9 @@ impl RcaAead for Chacha20Poly1305Provider {
             &ByteSeq::from_public_slice(aad),
             &ByteSeq::from_public_slice(m),
         );
-        unimplemented!()
+        let ctxt = ctxt.iter().map(|b| b.declassify()).collect();
+        let tag = tag.iter().map(|&b| b).collect();
+        Ok((ctxt, tag))
     }
 
     fn decrypt(
@@ -77,17 +81,12 @@ impl RcaAead for Chacha20Poly1305Provider {
             &ByteSeq::from_public_slice(c),
             HacspecTag::from_native_slice(tag),
         );
-        unimplemented!();
-    }
-
-    fn init(&mut self, _key: &Key, _nonce: &Nonce, _aad: &Aad) {
-        unimplemented!();
-    }
-    fn update(&mut self, _m: &[u8]) {
-        unimplemented!();
-    }
-    fn finish(&mut self, _m: &[u8]) -> Result<Vec<u8>, String> {
-        unimplemented!();
+        let msg = msg.iter().map(|b| b.declassify()).collect();
+        if valid {
+            Ok(msg)
+        } else {
+            Err("Error decrypting.".to_string())
+        }
     }
 }
 

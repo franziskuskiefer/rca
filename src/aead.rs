@@ -49,10 +49,10 @@ pub trait Aead: Algorithm {
         tag: &Tag,
     ) -> Result<Vec<u8>, String>;
 
-    // Streaming interface.
-    // Note that aad might only be needed in finish for some ciphers but earlier for others.
-    // Hence it's required in init.
-    fn init(&mut self, key: &Key, nonce: &Nonce, aad: &Aad);
-    fn update(&mut self, m: &[u8]);
-    fn finish(&mut self, m: &[u8]) -> Result<Vec<u8>, String>;
+    // // Streaming interface.
+    // // Note that aad might only be needed in finish for some ciphers but earlier for others.
+    // // Hence it's required in init.
+    // fn init(&mut self, key: &Key, nonce: &Nonce, aad: &Aad);
+    // fn update(&mut self, m: &[u8]);
+    // fn finish(&mut self, m: &[u8]) -> Result<Vec<u8>, String>;
 }

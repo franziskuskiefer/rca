@@ -95,6 +95,11 @@ impl Registry {
         self.providers.push(Box::new(provider));
     }
 
+    /// Remove all providers from the `Registry`.
+    pub fn clear(&mut self) {
+        self.providers.clear();
+    }
+
     /// Check support for an `algorithm`.
     /// Returns `true` if a `Provider` is registered that supports the `algorithm`.
     pub fn supports(&mut self, algorithm: &'static str) -> bool {

@@ -86,16 +86,6 @@ macro_rules! implement_aead {
                 };
                 Ok(ctxt)
             }
-
-            fn init(&mut self, _key: &Key, _nonce: &Nonce, _aad: &Aad) {
-                unimplemented!();
-            }
-            fn update(&mut self, _m: &[u8]) {
-                unimplemented!();
-            }
-            fn finish(&mut self, _m: &[u8]) -> Result<Vec<u8>, String> {
-                unimplemented!();
-            }
         }
     };
 }

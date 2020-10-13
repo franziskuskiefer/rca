@@ -7,6 +7,7 @@ use rca::registry::*;
 use rand::Rng;
 
 use rca::provider::evercrypt_provider::EvercryptProvider;
+use rca::provider::hacspec_provider::HacspecProvider;
 
 fn aead_enc_dec(cipher: &Box<dyn Aead>) {
     let key = cipher.key_gen();
@@ -70,6 +71,22 @@ fn test_aead() {
     aead_enc_dec(&cipher);
 
     // Get cipher through registry.
+    let cipher_result = registry.get_aead("Chacha20Poly1305");
+    assert!(cipher_result.is_ok());
+    let cipher = match cipher_result {
+        Ok(v) => v,
+        Err(e) => panic!("Error getting AEAD {}", e),
+    };
+    aead_enc_dec(&cipher);
+
+    // Remove all providers
+    registry.clear();
+    assert!(!registry.supports("Chacha20Poly1305"));
+
+    // Add hacspec provider
+    registry.add(HacspecProvider::new());
+    assert!(registry.supports("Chacha20Poly1305"));
+
     let cipher_result = registry.get_aead("Chacha20Poly1305");
     assert!(cipher_result.is_ok());
     let cipher = match cipher_result {
